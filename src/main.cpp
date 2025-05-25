@@ -1,3 +1,4 @@
+#include<iomanip>
 #include<iostream>
 #include<fstream>
 #include<sstream>
@@ -10,6 +11,7 @@
 
 #include "Camera.h"
 #include "Mesh.h"
+#include "RayCaster.h"
 #include "Texture.h"
 #include "TextRenderer.h"
 
@@ -63,7 +65,7 @@ int main() {
   glfwMakeContextCurrent(window);
   
   // Vsync ON
-  glfwSwapInterval(1); 
+  glfwSwapInterval(1);
   
   // Load GLAD so it configures OpenGL
   gladLoadGL();
@@ -75,6 +77,7 @@ int main() {
   
   Shader shader("assets/shaders/default.vert", "assets/shaders/default.frag");
   Shader textShader("assets/shaders/text.vert", "assets/shaders/text.frag");
+  Shader rayShader("assets/shaders/default.vert", "assets/shaders/ray.frag");
   
   std::vector<Vertex> vert(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
   std::vector<GLuint> ind(indices, indices + sizeof(indices) / sizeof(GLuint));
@@ -83,6 +86,8 @@ int main() {
   
   Texture myTexture("assets/images/brs.png", 0, GL_RGBA, GL_UNSIGNED_BYTE);
   myTexture.texUnit(shader, "myTexture");
+  
+  RayCaster rayCaster;
   
   
   // UV Scrolling
@@ -97,6 +102,7 @@ int main() {
   // Camera
   Camera camera(width, height, glm::vec3(0.0f, 0.0f, -2.0f));
   
+  glEnable(GL_DEPTH_TEST);
   // Specify the color of the background
   glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
   // Clean the back buffer and assign the new color to it
@@ -112,7 +118,7 @@ int main() {
   // Main while loop
   while (!glfwWindowShouldClose(window))
   {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     float currentTime = glfwGetTime();
     float deltaTime = currentTime - lastTime;
@@ -134,16 +140,29 @@ int main() {
     camera.Inputs(window);
     camera.updateMatrix(45.0f, 0.1f, 100.0f, shader, "camMatrix");
     
-    myTexture.Bind();
     shader.Activate();
+    myTexture.Bind();
     mesh.Draw(shader);
+    
+    // Ray Casting
+    rayShader.Activate();
+    camera.updateMatrix(45.0f, 0.1f, 100.0f, rayShader, "camMatrix");
+    rayCaster.DrawLine(window, rayShader, camera);
     
     // Get mouse coordinate
 	  double xpos, ypos;
+    int winWidth, winHeight;
+    glfwGetWindowSize(window, &winWidth, &winHeight);
 	  glfwGetCursorPos(window, &xpos, &ypos);
+    
     std::stringstream mouseLog;
-    mouseLog << "X: " << xpos << " Y: " << ypos;
-    textRender.type(textShader, mouseLog.str(), 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+    mouseLog 
+      << "X: " << std::setprecision(3) << xpos
+      << " "
+      << "Y: " << std::setprecision(3) << ypos
+      << " "
+      << "width: " << winWidth << " height: " << winHeight;
+    textRender.type(textShader, mouseLog.str(), 400.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
     
     glfwSwapBuffers(window);
     
