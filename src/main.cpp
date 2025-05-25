@@ -171,6 +171,8 @@ int main() {
   }
   
   shader.Delete();
+  textShader.Delete();
+  rayShader.Delete();
   mesh.Delete();
   myTexture.Delete();
   glfwDestroyWindow(window);
