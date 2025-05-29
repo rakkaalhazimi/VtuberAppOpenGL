@@ -147,21 +147,29 @@ int main() {
     // Ray Casting
     rayShader.Activate();
     camera.updateMatrix(45.0f, 0.1f, 100.0f, rayShader, "camMatrix");
-    rayCaster.DrawLine(window, rayShader, camera);
+    rayCaster.Activate(window, rayShader, camera);
+    rayCaster.DrawLine();
+    const bool hit = rayCaster.Intersect(shader, mesh);
     
     // Get mouse coordinate
 	  double xpos, ypos;
     int winWidth, winHeight;
     glfwGetWindowSize(window, &winWidth, &winHeight);
 	  glfwGetCursorPos(window, &xpos, &ypos);
+    float x = (2.0f * xpos) / winWidth - 1.0f;
+    float y = 1.0f - (2.0f * ypos) / winHeight;
+    glm::vec2 ndc = glm::vec2(x, y);
     
     std::stringstream mouseLog;
     mouseLog 
-      << "X: " << std::setprecision(3) << xpos
+      << "X: " << std::setprecision(3) << ndc.x
       << " "
-      << "Y: " << std::setprecision(3) << ypos
+      << "Y: " << std::setprecision(3) << ndc.y
       << " "
-      << "width: " << winWidth << " height: " << winHeight;
+      // << "Z: " << std::setprecision(3) << rayCaster.rayDirection.z
+      << " "
+      << "Inter: " << hit;
+      // << "width: " << winWidth << " height: " << winHeight;
     textRender.type(textShader, mouseLog.str(), 400.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
     
     glfwSwapBuffers(window);

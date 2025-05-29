@@ -9,6 +9,7 @@
 #include<glm/gtc/type_ptr.hpp>
 
 #include "Camera.h"
+#include "Mesh.h"
 #include "shader.h"
 
 
@@ -22,8 +23,15 @@ class RayCaster
     glm::vec3 vertices[2];
     
     RayCaster();
-    void DrawLine(GLFWwindow* window, Shader& shader, Camera& camera);
-    void Intersect();
+    void DrawLine();
+    void Activate(GLFWwindow* window, Shader& shader, Camera& camera);
+    bool Intersect(Shader &shader, Mesh &mesh);
+    bool RayIntersectsTriangle(
+      const glm::vec3& v0,
+      const glm::vec3& v1,
+      const glm::vec3& v2,
+      float& t, float& u, float& v
+    );
 };
 
 

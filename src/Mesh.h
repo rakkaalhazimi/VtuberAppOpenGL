@@ -24,6 +24,7 @@ class Mesh
     public:
       GLuint VAO, VBO, EBO;
       
+      std::vector<glm::vec3> positions;
       std::vector<GLuint> indices;
       
       Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices);

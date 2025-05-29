@@ -4,6 +4,11 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices)
 {
   Mesh::indices = indices;
   
+  for (Vertex item: vertices)
+  {
+    positions.push_back(item.position);
+  }
+  
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
   glGenBuffers(1, &EBO);

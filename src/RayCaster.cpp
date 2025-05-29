@@ -21,7 +21,7 @@ RayCaster::RayCaster()
   glBindVertexArray(0);
 }
 
-void RayCaster::DrawLine(GLFWwindow* window, Shader& shader, Camera& camera)
+void RayCaster::Activate(GLFWwindow* window, Shader& shader, Camera& camera)
 {
   shader.Activate();
   
@@ -41,19 +41,108 @@ void RayCaster::DrawLine(GLFWwindow* window, Shader& shader, Camera& camera)
   
   // The line is pointing to our direction, that is why it seems like following the mouse.
   glm::vec3 rayWorld = glm::normalize(glm::vec3(glm::inverse(camera.view) * rayEye));
-  glm::vec3 rayOrigin = camera.Position + glm::vec3(0.0f, 0.0f, -0.1f);
-  // glm::vec3 rayOrigin = glm::vec3(0.0f, 0.0f, -2.0f);
-  glm::vec3 rayEnd = rayOrigin + rayWorld * 100.0f;
-  glm::vec3 point = rayOrigin + rayWorld + 0.01f;
+  rayDirection = rayWorld;
+  
+  // It's a point in world space, near the camera (on the near clipping plane). 
+  // If your camera is far from the origin or zoomed out, these values may look small.
   glm::vec4 mousePoint = glm::inverse(camera.projection * camera.view) * glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
   mousePoint /= mousePoint.w;
+  rayOrigin = glm::vec3(mousePoint.x, mousePoint.y, mousePoint.z - 0.01f);
   
   // Update vertices
-  vertices[0] = glm::vec3(mousePoint.x, mousePoint.y, mousePoint.z - 0.01f);
-  vertices[1] = vertices[0] + rayWorld * 100.0f;
-  
+  vertices[0] = rayOrigin;
+  vertices[1] = rayOrigin + rayWorld * 100.0f;
+}
+
+void RayCaster::DrawLine()
+{
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
   glBindVertexArray(VAO);
   glDrawArrays(GL_LINES, 0, 2);  
+}
+
+bool RayCaster::Intersect(Shader &shader, Mesh &mesh)
+{
+  float closestT = FLT_MAX;
+  bool hit = false;
+  glm::vec3 hitPoint;
+  
+  glm::vec4 greenColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+  glm::vec4 whiteColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  shader.Activate();
+  glUniform3f(glGetUniformLocation(shader.ID, "selectionColor"), whiteColor.x, whiteColor.y, whiteColor.z);
+  
+  for (size_t i = 0; i < mesh.indices.size(); i += 3) 
+  {
+    glm::vec3 v0 = mesh.positions[mesh.indices[i]];
+    glm::vec3 v1 = mesh.positions[mesh.indices[i + 1]];
+    glm::vec3 v2 = mesh.positions[mesh.indices[i + 2]];
+
+    float t, u, v;
+    if (RayIntersectsTriangle(v0, v1, v2, t, u, v)) 
+    {
+      if (t < closestT) 
+      {
+          closestT = t;
+          hit = true;
+          glUniform3f(glGetUniformLocation(shader.ID, "selectionColor"), greenColor.x, greenColor.y, greenColor.z);
+          // hitPoint = rayOriginLocal + t * rayDirLocal;
+      }
+    }
+  }
+  return hit;
+  // End for loop
+}
+
+bool RayCaster::RayIntersectsTriangle(
+  const glm::vec3& v0,
+  const glm::vec3& v1,
+  const glm::vec3& v2,
+  float& t, float& u, float& v)
+{
+  const float EPSILON = 1e-8;
+  glm::vec3 edge1 = v1 - v0;
+  glm::vec3 edge2 = v2 - v0;
+  
+  // glm::vec3 center = (v0 + v1 + v2) / 3.0f;
+  // glm::vec3 center = glm::vec3(-1.0f, -1.0f, -1.0f);
+  // rayOrigin = center + glm::vec3(0.0f, 0.0f, 2.0f);
+  // rayDirection = glm::vec3(0.0f, 0.0f, -1.0f);
+  
+  // rayOrigin = glm::vec3(0.0f, 0.25f, -1.0f);
+  // rayDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+  
+  glm::vec3 h = glm::cross(rayDirection, edge2);
+  float a = glm::dot(edge1, h);
+  
+  // Parallel to the triangle if a is closer to 0
+  if (fabs(a) < EPSILON)
+  {
+    return false;
+  }
+  
+  float f = 1.0 / a;
+  glm::vec3 s = rayOrigin - v0;
+  u = f * glm::dot(s, h);
+  
+  // Point u is outside the triangle
+  if (u < 0.0 || u > 1.0)
+  {
+    return false;
+  }
+  
+  glm::vec3 q = glm::cross(s, edge1);
+  v = f * glm::dot(rayDirection, q);
+  
+  // Point v is outside the triangle
+  if (v < 0.0 || u + v > 1.0)
+  {
+    return false;
+  }
+  
+  t = f * glm::dot(edge2, q);
+  
+  // Ray intersect triangle if t is more than Epsilon
+  return t > EPSILON;
 }
