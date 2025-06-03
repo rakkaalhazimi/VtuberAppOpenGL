@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "RayCaster.h"
+#include "Selector.h"
 #include "Texture.h"
 #include "TextRenderer.h"
 
@@ -82,11 +83,17 @@ int main() {
   std::vector<Vertex> vert(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
   std::vector<GLuint> ind(indices, indices + sizeof(indices) / sizeof(GLuint));
   
+  // Mesh
   Mesh mesh(vert, ind);
+  Mesh mesh2(vert, ind);
+  mesh2.translation.x = 1.5f;
+  std::vector<Mesh*> meshes = {&mesh, &mesh2};
   
+  // Texture
   Texture myTexture("assets/images/brs.png", 0, GL_RGBA, GL_UNSIGNED_BYTE);
   myTexture.texUnit(shader, "myTexture");
   
+  // Raycaster
   RayCaster rayCaster;
   
   
@@ -113,6 +120,13 @@ int main() {
   
   // Freetype
   TextRenderer textRender("assets/fonts/ARIAL.TTF");
+  bool locked = false;
+  
+  glm::mat4 model = glm::mat4(1.0f);
+  
+  
+  // Selector
+  Selector selector;
   
   
   // Main while loop
@@ -142,7 +156,9 @@ int main() {
     
     shader.Activate();
     myTexture.Bind();
+    selector.Watch(window, rayCaster, meshes);
     mesh.Draw(shader);
+    mesh2.Draw(shader);
     
     // Ray Casting
     rayShader.Activate();
@@ -150,6 +166,8 @@ int main() {
     rayCaster.Activate(window, rayShader, camera);
     rayCaster.DrawLine();
     const bool hit = rayCaster.Intersect(shader, mesh);
+    const bool pressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+    const bool unlocked = glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS;
     
     // Get mouse coordinate
 	  double xpos, ypos;

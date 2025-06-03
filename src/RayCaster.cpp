@@ -62,38 +62,6 @@ void RayCaster::DrawLine()
   glDrawArrays(GL_LINES, 0, 2);  
 }
 
-bool RayCaster::Intersect(Shader &shader, Mesh &mesh)
-{
-  float closestT = FLT_MAX;
-  bool hit = false;
-  glm::vec3 hitPoint;
-  
-  glm::vec4 greenColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-  glm::vec4 whiteColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-  shader.Activate();
-  glUniform3f(glGetUniformLocation(shader.ID, "selectionColor"), whiteColor.x, whiteColor.y, whiteColor.z);
-  
-  for (size_t i = 0; i < mesh.indices.size(); i += 3) 
-  {
-    glm::vec3 v0 = mesh.positions[mesh.indices[i]];
-    glm::vec3 v1 = mesh.positions[mesh.indices[i + 1]];
-    glm::vec3 v2 = mesh.positions[mesh.indices[i + 2]];
-
-    float t, u, v;
-    if (RayIntersectsTriangle(v0, v1, v2, t, u, v)) 
-    {
-      if (t < closestT) 
-      {
-          closestT = t;
-          hit = true;
-          glUniform3f(glGetUniformLocation(shader.ID, "selectionColor"), greenColor.x, greenColor.y, greenColor.z);
-          // hitPoint = rayOriginLocal + t * rayDirLocal;
-      }
-    }
-  }
-  return hit;
-  // End for loop
-}
 
 bool RayCaster::RayIntersectsTriangle(
   const glm::vec3& v0,
@@ -104,14 +72,6 @@ bool RayCaster::RayIntersectsTriangle(
   const float EPSILON = 1e-8;
   glm::vec3 edge1 = v1 - v0;
   glm::vec3 edge2 = v2 - v0;
-  
-  // glm::vec3 center = (v0 + v1 + v2) / 3.0f;
-  // glm::vec3 center = glm::vec3(-1.0f, -1.0f, -1.0f);
-  // rayOrigin = center + glm::vec3(0.0f, 0.0f, 2.0f);
-  // rayDirection = glm::vec3(0.0f, 0.0f, -1.0f);
-  
-  // rayOrigin = glm::vec3(0.0f, 0.25f, -1.0f);
-  // rayDirection = glm::vec3(0.0f, 0.0f, 1.0f);
   
   glm::vec3 h = glm::cross(rayDirection, edge2);
   float a = glm::dot(edge1, h);
@@ -145,4 +105,74 @@ bool RayCaster::RayIntersectsTriangle(
   
   // Ray intersect triangle if t is more than Epsilon
   return t > EPSILON;
+}
+
+
+bool RayCaster::Intersect(Shader &shader, Mesh &mesh)
+{
+  float closestT = FLT_MAX;
+  bool hit = false;
+  glm::vec3 hitPoint;
+  
+  for (size_t i = 0; i < mesh.indices.size(); i += 3) 
+  {
+    glm::vec3 v0 = mesh.positionsTransformed[mesh.indices[i]];
+    glm::vec3 v1 = mesh.positionsTransformed[mesh.indices[i + 1]];
+    glm::vec3 v2 = mesh.positionsTransformed[mesh.indices[i + 2]];
+
+    float t, u, v;
+    if (RayIntersectsTriangle(v0, v1, v2, t, u, v)) 
+    {
+      if (t < closestT) 
+      {
+          closestT = t;
+          hit = true;
+          // hitPoint = rayOriginLocal + t * rayDirLocal;
+      }
+    }
+  }
+  return hit;
+  // End for loop
+}
+
+void RayCaster::IntersectRayWithMesh(Mesh* mesh, float& dist)
+{
+  float closestT = FLT_MAX;
+  // std::vector<glm::vec3> positions = mesh->getTransformedPosition();
+  for (size_t i = 0; i < mesh->indices.size(); i += 3) 
+  {
+    glm::vec3 v0 = mesh->positionsTransformed[mesh->indices[i]];
+    glm::vec3 v1 = mesh->positionsTransformed[mesh->indices[i + 1]];
+    glm::vec3 v2 = mesh->positionsTransformed[mesh->indices[i + 2]];
+    float t, u, v;
+    
+    if (!RayIntersectsTriangle(v0, v1, v2, t, u, v)) continue;
+    
+    if (t < closestT)
+    {
+      closestT = t;
+    }
+  }
+  dist = closestT;
+}
+
+
+Mesh* RayCaster::CastRay(const std::vector<Mesh*> &meshes)
+{
+  Mesh* closestMesh = nullptr;
+  float closestDistance = FLT_MAX;
+  
+  for (Mesh* mesh : meshes)
+  {
+    float dist;
+    IntersectRayWithMesh(mesh, dist);
+    
+    if (dist < closestDistance)
+    {
+      closestDistance = dist;
+      closestMesh = mesh;
+    }
+  }
+  
+  return closestMesh;
 }

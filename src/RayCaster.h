@@ -32,6 +32,8 @@ class RayCaster
       const glm::vec3& v2,
       float& t, float& u, float& v
     );
+    void IntersectRayWithMesh(Mesh* mesh, float& dist);
+    Mesh* CastRay(const std::vector<Mesh*> &meshes);
 };
 
 

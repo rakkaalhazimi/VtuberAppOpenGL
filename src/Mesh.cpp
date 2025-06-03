@@ -7,6 +7,7 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices)
   for (Vertex item: vertices)
   {
     positions.push_back(item.position);
+    positionsTransformed.push_back(item.position);
   }
   
   glGenVertexArrays(1, &VAO);
@@ -36,14 +37,88 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices)
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  
+  // Initial Centroid
+  centroid = glm::vec3(0.0f);
+  for (int i = 0; i < positions.size(); i++)
+  {
+    centroid += positions[i];
+  }
+  centroid /= static_cast<float>(positions.size());
 }
 
 void Mesh::Draw(Shader& shader)
 {
   shader.Activate();
+  glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+  
+  // Selection Color
+  if (isSelected)
+  {
+    glUniform3f(glGetUniformLocation(shader.ID, "selectionColor"), 0.0f, 1.0f, 0.0f);
+  }
+  else
+  {
+    glUniform3f(glGetUniformLocation(shader.ID, "selectionColor"), 1.0f, 1.0f, 1.0f);
+  }
+  
+  // Transformation
+  model = glm::mat4(1.0f);
+  
+  // Translation
+  model = glm::translate(model, translation);
+  
+  // Rotation
+  model = glm::translate(model, centroid);
+  model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+  model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+  model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+  model = glm::translate(model, -centroid);
+  
+  // Scale
+  model = glm::scale(model, glm::vec3(scale));
+  
+  TransformPosition(model);
+  glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+  
   glBindVertexArray(VAO);
   glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }
+
+void Mesh::RotateZ(float degree)
+{
+  rotation.z = degree;
+}
+
+void Mesh::RotateY(float degree)
+{
+  rotation.y = degree;
+}
+
+void Mesh::Scale(float scale)
+{
+  Mesh::scale = scale;
+}
+
+void Mesh::TransformPosition(glm::mat4& model)
+{
+  for (int i = 0; i < positionsTransformed.size(); i++)
+  {
+    glm::vec4 transformed = model * glm::vec4(positions[i], 1.0f);
+    positionsTransformed[i] = glm::vec3(transformed);
+  }
+}
+
+std::vector<glm::vec3> Mesh::getTransformedPosition()
+{
+  std::vector<glm::vec3> newPositions;
+  for (glm::vec3 item: positions)
+  {
+    glm::vec3 transformed = glm::vec3(model * glm::vec4(item, 1.0f));
+    newPositions.push_back(transformed);
+  }
+  return newPositions;
+};
 
 void Mesh::Delete()
 {
