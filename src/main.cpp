@@ -90,7 +90,7 @@ int main() {
   std::vector<Mesh*> meshes = {&mesh, &mesh2};
   
   // Texture
-  Texture myTexture("assets/images/brs.png", 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  Texture myTexture("assets/images/brs.png", 0);
   myTexture.texUnit(shader, "myTexture");
   
   // Raycaster
