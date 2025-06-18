@@ -10,6 +10,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Set Executable filename
 set(EXE_FILE "app")
 
+# Enable static linking of libstdc++ (std::filesystem won't work without this)
+# if(MINGW)
+    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
+# endif()
+
 # Include Folders
 include_directories(include)
 
@@ -30,8 +35,8 @@ target_link_libraries(${PROJECT_NAME}
   freetype
   glfw3
   opengl32
-  gdi32
-  winmm
+  gdi32 # windows GUI
+  winmm # windows multimedia: timers, audio and input devices
 )
 
 # Post-build: move (copy) the .exe to /bin/
