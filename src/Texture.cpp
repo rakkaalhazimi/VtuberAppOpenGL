@@ -1,10 +1,60 @@
 #include "Texture.h"
 
-Texture::Texture(const char* image, GLenum slot)
+
+std::u16string utf8ToUtf16(const std::string &utf8Str)
 {
+  std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+  return convert.from_bytes(utf8Str);
+}
+
+
+bool endsWith(const std::string& fullString, const std::string& ending) 
+{
+    if (ending.size() > fullString.size()) return false;
+    return std::equal(ending.rbegin(), ending.rend(), fullString.rbegin());
+}
+
+
+Texture::Texture(std::string image, const char* texType, GLuint slot)
+{
+  type = texType;
+  
   int widthImg, heightImg, numColCh;
   stbi_set_flip_vertically_on_load(true);
-  unsigned char* bytes = stbi_load(image, &widthImg, &heightImg, &numColCh, 0);
+  
+  
+  std::filesystem::path imagePath = image;
+  std::ifstream imageFile {imagePath, std::ios::binary};
+  unsigned char* bytes;
+  
+  
+  if (!imageFile.is_open())
+  {
+    std::cerr << "Failed to load image: " << stbi_failure_reason() << std::endl;
+    exit(1);
+  }
+  
+  // Temporary solution to open bmp file
+  if (endsWith(image, ".bmp"))
+  {
+    // const char *imageCStr = image.c_str();
+    bytes = stbi_load(image.c_str(), &widthImg, &heightImg, &numColCh, 0);
+  }
+  else
+  {
+    uint32_t size = std::filesystem::file_size(imagePath);
+    // std::cout << "File size: " << size << " bytes" << std::endl;
+    std::vector<unsigned char> buffer(size);
+    imageFile.read(reinterpret_cast<char*>(buffer.data()), size);
+    bytes = stbi_load_from_memory(buffer.data(), size, &widthImg, &heightImg, &numColCh, 0);
+    
+  }
+  
+  if (bytes == nullptr)
+  {
+    std::cerr << "Failed to open image: " << stbi_failure_reason() << std::endl;
+    exit(1);
+  }
   
   glGenTextures(1, &ID);
   glActiveTexture(GL_TEXTURE0 + slot);
@@ -16,6 +66,11 @@ Texture::Texture(const char* image, GLenum slot)
   
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  
+  // std::cout << "Image: " << image << std::endl;
+  // std::cout << "width: " << widthImg << std::endl;
+  // std::cout << "height: " << heightImg << std::endl;
+  // std::cout << "numColCh: " << numColCh << std::endl;
   
   if (numColCh == 4)
 	{
@@ -37,10 +92,11 @@ Texture::Texture(const char* image, GLenum slot)
   glGenerateMipmap(GL_TEXTURE_2D);
   
   stbi_image_free(bytes);
+  imageFile.close();
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::texUnit(Shader& shader, const char* uniform)
+void Texture::texUnit(Shader& shader, const char* uniform, GLuint unit)
 {
   GLuint texUni = glGetUniformLocation(shader.ID, uniform);
   shader.Activate();

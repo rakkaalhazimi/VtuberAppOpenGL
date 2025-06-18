@@ -10,7 +10,9 @@
 #include<glm/gtc/type_ptr.hpp>
 
 #include "Camera.h"
+#include "PMXFile.h"
 #include "Mesh.h"
+
 #include "RayCaster.h"
 #include "Selector.h"
 #include "Texture.h"
@@ -80,18 +82,21 @@ int main() {
   Shader textShader("assets/shaders/text.vert", "assets/shaders/text.frag");
   Shader rayShader("assets/shaders/default.vert", "assets/shaders/ray.frag");
   
-  std::vector<Vertex> vert(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
-  std::vector<GLuint> ind(indices, indices + sizeof(indices) / sizeof(GLuint));
+  
+  // Texture
+  Texture myTexture("assets/images/brs.png", "textureType", 0);
+  // myTexture.texUnit(shader, "myTexture", 0);
   
   // Mesh
-  Mesh mesh(vert, ind);
-  Mesh mesh2(vert, ind);
+  std::vector<Vertex> vert(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
+  std::vector<GLuint> ind(indices, indices + sizeof(indices) / sizeof(GLuint));
+  std::vector<Texture> tex = {myTexture};
+  
+  Mesh mesh(vert, ind, tex);
+  Mesh mesh2(vert, ind, tex);
   mesh2.translation.x = 1.5f;
   std::vector<Mesh*> meshes = {&mesh, &mesh2};
   
-  // Texture
-  Texture myTexture("assets/images/brs.png", 0);
-  myTexture.texUnit(shader, "myTexture");
   
   // Raycaster
   RayCaster rayCaster;
@@ -129,6 +134,44 @@ int main() {
   Selector selector;
   
   
+  // PMXFile
+  PMXFile pmxFile("assets/models/feixiao.pmx");
+  
+  std::vector<Texture> pmxTextures = {};
+  for (int i = 0; i < pmxFile.textures.size(); i++)
+  {
+    pmxTextures.push_back(
+      Texture{pmxFile.textures[i].c_str(), "myTexture", (GLuint)i}
+    );
+  }
+  
+  std::vector<Vertex> pmxVertices;
+  for (PMXVertex item: pmxFile.vertices)
+  {
+    pmxVertices.push_back(
+      Vertex 
+      {
+        glm::vec3(item.position.x, item.position.y, item.position.z), 
+        glm::vec3(item.normal.x, item.normal.y, item.normal.z), 
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec2(item.uv.x, 1.0f - item.uv.y), // Flips vertical for PMX File
+      }
+    );
+  }
+  
+  std::vector<GLuint> pmxIndices;
+  for (uint16_t item: pmxFile.indices)
+  {
+    pmxIndices.push_back(item);
+  }
+  Mesh feixiaoMesh(pmxVertices, pmxIndices, pmxTextures);
+  
+  int faceAllCount = 0;
+  for (PMXMaterial item: pmxFile.materials)
+  {
+    faceAllCount += item.faceCount;
+  }
+  
   // Main while loop
   while (!glfwWindowShouldClose(window))
   {
@@ -143,7 +186,7 @@ int main() {
     if (elapsedTime >= targetFrameTime)
     {
       shader.Activate();
-      uOffset += 0.01f;
+      // uOffset += 0.01f; // temporarily disable uvOffset for pmx mesh
       GLuint uOffsetLoc = glGetUniformLocation(shader.ID, "uOffset");
       glUniform1f(uOffsetLoc, uOffset);
       
@@ -155,10 +198,10 @@ int main() {
     camera.updateMatrix(45.0f, 0.1f, 100.0f, shader, "camMatrix");
     
     shader.Activate();
-    myTexture.Bind();
     selector.Watch(window, rayCaster, meshes);
     mesh.Draw(shader);
     mesh2.Draw(shader);
+    feixiaoMesh.DrawPMX(shader, pmxFile.materials);
     
     // Ray Casting
     rayShader.Activate();

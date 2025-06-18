@@ -1,8 +1,10 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices)
+Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, std::vector <Texture>& textures)
 {
+  Mesh::vertices = vertices;
   Mesh::indices = indices;
+  Mesh::textures = textures;
   
   for (Vertex item: vertices)
   {
@@ -52,6 +54,26 @@ void Mesh::Draw(Shader& shader)
   shader.Activate();
   glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
   
+  // Textures
+  unsigned int numDiffuse = 0;
+	unsigned int numSpecular = 0;
+  
+	for (unsigned int i = 0; i < textures.size(); i++)
+	{
+		std::string num;
+		std::string type = textures[i].type;
+		if (type == "diffuse")
+		{
+			num = std::to_string(numDiffuse++);
+		}
+		else if (type == "specular")
+		{
+			num = std::to_string(numSpecular++);
+		}
+		textures[i].texUnit(shader, "myTexture", i);
+		textures[i].Bind();
+	}
+  
   // Selection Color
   if (isSelected)
   {
@@ -84,6 +106,28 @@ void Mesh::Draw(Shader& shader)
   glBindVertexArray(VAO);
   glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }
+
+void Mesh::DrawPMX(Shader &shader, std::vector<PMXMaterial> &materials)
+{
+  shader.Activate();
+  glBindVertexArray(VAO);
+  
+  int indexOffset = 0;
+  
+  for (int i = 0; i < materials.size(); i++)
+  {
+    
+    int indexCount = materials[i].faceCount;
+    int textureIndex = materials[i].textureIndex;
+    
+    textures[textureIndex].texUnit(shader, "myTexture", textureIndex);
+    textures[textureIndex].Bind();
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void*)(indexOffset * sizeof(GLuint)));
+    
+    indexOffset += indexCount;
+  }
+}
+
 
 void Mesh::RotateZ(float degree)
 {

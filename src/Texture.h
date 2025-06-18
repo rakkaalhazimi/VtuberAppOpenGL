@@ -2,6 +2,9 @@
 #define TEXTURE_CLASS_H
 
 
+#include<filesystem>
+#include<vector>
+
 #include<glad/glad.h>
 #include<stb/stb_image.h>
 
@@ -11,11 +14,11 @@ class Texture
 {
   public:
     GLuint ID;
-    GLenum type;
+    const char* type;
     GLuint unit;
     
-    Texture(const char* image, GLenum slot);
-    void texUnit(Shader& shader, const char* uniform);
+    Texture(std::string image, const char* texType, GLuint slot);
+    void texUnit(Shader& shader, const char* uniform, GLuint unit);
     void Bind();
     void Unbind();
     void Delete();
