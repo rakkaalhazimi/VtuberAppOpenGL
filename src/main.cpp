@@ -151,8 +151,8 @@ int main() {
     pmxVertices.push_back(
       Vertex 
       {
-        glm::vec3(item.position.x, item.position.y, item.position.z), 
-        glm::vec3(item.normal.x, item.normal.y, item.normal.z), 
+        item.position, 
+        item.normal, 
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec2(item.uv.x, 1.0f - item.uv.y), // Flips vertical for PMX File
       }

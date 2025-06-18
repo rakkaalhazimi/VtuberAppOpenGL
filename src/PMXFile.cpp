@@ -78,7 +78,7 @@ PMXVertex PMXFile::readPmxVertex(std::ifstream &file, uint8_t additionalUVCount,
 
   for (int i = 0; i < additionalUVCount; ++i)
   {
-    Vec4 uv;
+    glm::vec4 uv;
     readBinary(file, uv);
     v.additionalUVs.push_back(uv);
   }

@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include<glm/glm.hpp>
+
 
 
 struct PMXHeader
@@ -53,16 +55,16 @@ struct Vec4
 
 struct PMXVertex
 {
-  Vec3 position;
-  Vec3 normal;
-  Vec2 uv;
-  std::vector<Vec4> additionalUVs;
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec2 uv;
+  std::vector<glm::vec4> additionalUVs;
 
   uint8_t weightType; // 0:BDEF1 1:BDEF2 2:BDEF4 3:SDEF 4:QDEF
   std::vector<int32_t> boneIndices;
   std::vector<float> weights;
   
-  Vec3 C, R0, R1;
+  glm::vec3 C, R0, R1;
 
   float edgeScale;
 };
@@ -99,14 +101,14 @@ struct PMXMaterial
   std::string nameLocal;
   std::string nameGlobal;
   
-  Vec4 diffuseColor;
-  Vec3 specularColor;
+  glm::vec4 diffuseColor;
+  glm::vec3 specularColor;
   float specularity;
-  Vec3 ambientColor;
+  glm::vec3 ambientColor;
   
   uint8_t drawingMode;
   
-  Vec4 edgeColor;
+  glm::vec4 edgeColor;
   float edgeSize;
   
   int32_t textureIndex;
@@ -145,8 +147,8 @@ struct PMXIKBoneLink
 {
   int32_t ikBoneIndex;
   uint8_t enableAngleLimit;
-  Vec3 lowerLimit;
-  Vec3 upperLimit;
+  glm::vec3 lowerLimit;
+  glm::vec3 upperLimit;
 };
 
 
@@ -155,7 +157,7 @@ struct PMXBone
   std::string nameLocal;
   std::string nameGlobal;
   
-  Vec3 position;
+  glm::vec3 position;
   int32_t parentBoneIndex;
   
   int32_t transformLevel;
@@ -166,18 +168,18 @@ struct PMXBone
   int32_t connectionIndex;
   
   // Unset connection
-  Vec3 positionOffset;
+  glm::vec3 positionOffset;
   
   // Set add rotation | add movement
   int32_t additionalParentIndex;
   float additionalRate;
   
   // Set fixed axis
-  Vec3 axisVector;
+  glm::vec3 axisVector;
   
   // Set local axis
-  Vec3 xAxisVector;
-  Vec3 zAxisVector;
+  glm::vec3 xAxisVector;
+  glm::vec3 zAxisVector;
   
   // Set external parent transform
   int32_t keyValue;
@@ -229,20 +231,20 @@ struct PMXMorph
   struct VertexMorph
   {
     int32_t vertexIndex;
-    Vec3 positionOffset;
+    glm::vec3 positionOffset;
   };
   
   struct BoneMorph
   {
     int32_t boneIndex;
-    Vec3 moveValue;
-    Vec4 rotationValue;
+    glm::vec3 moveValue;
+    glm::vec4 rotationValue;
   };
   
   struct UVMorph
   {
     int32_t vertexIndex;
-    Vec4 uvOffset;
+    glm::vec4 uvOffset;
   };
   
   struct MaterialMorph
@@ -250,27 +252,27 @@ struct PMXMorph
     int32_t materialIndex;
     uint8_t offsetMethod;
     
-    Vec4 diffuseColor;
-    Vec3 specularColor;
+    glm::vec4 diffuseColor;
+    glm::vec3 specularColor;
     float specularity;
-    Vec3 ambientColor;
+    glm::vec3 ambientColor;
     
-    Vec4 edgeColor;
+    glm::vec4 edgeColor;
     float edgeSize;
     
-    Vec4 textureTint;
+    glm::vec4 textureTint;
     
-    Vec4 environmentTint;
+    glm::vec4 environmentTint;
     
-    Vec4 toonTint;
+    glm::vec4 toonTint;
   };
   
   struct ImpulseMorph
   {
     int32_t rigidBodyIndex;
     uint8_t localFlag;
-    Vec3 moreVelocity;
-    Vec3 rotationTorque;
+    glm::vec3 moreVelocity;
+    glm::vec3 rotationTorque;
   };
   
   std::vector<GroupMorph> groupMorph;
@@ -330,10 +332,10 @@ struct PMXRigidBody
   };
   
   ShapeType shapeType;
-  Vec3 shapeSize;
+  glm::vec3 shapeSize;
   
-  Vec3 colliderPosition;
-  Vec3 colliderRotation;
+  glm::vec3 colliderPosition;
+  glm::vec3 colliderRotation;
   
   float weight;
   
@@ -363,17 +365,17 @@ struct PMXJoint
   int32_t rigidBodyIndex1;
   int32_t rigidBodyIndex2;
   
-  Vec3 position;
-  Vec3 rotation;
+  glm::vec3 position;
+  glm::vec3 rotation;
   
-  Vec3 positionConstraintLower;
-  Vec3 positionConstraintUpper;
+  glm::vec3 positionConstraintLower;
+  glm::vec3 positionConstraintUpper;
   
-  Vec3 rotationConstraintLower;
-  Vec3 rotationConstraintUpper;
+  glm::vec3 rotationConstraintLower;
+  glm::vec3 rotationConstraintUpper;
   
-  Vec3 springPosition;
-  Vec3 springRotation;
+  glm::vec3 springPosition;
+  glm::vec3 springRotation;
 };
 
 
