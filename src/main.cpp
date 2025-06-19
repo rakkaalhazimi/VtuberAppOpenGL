@@ -11,6 +11,7 @@
 
 #include "Camera.h"
 #include "PMXFile.h"
+#include "PMXModel.h"
 #include "Mesh.h"
 
 #include "RayCaster.h"
@@ -81,6 +82,7 @@ int main() {
   Shader shader("assets/shaders/default.vert", "assets/shaders/default.frag");
   Shader textShader("assets/shaders/text.vert", "assets/shaders/text.frag");
   Shader rayShader("assets/shaders/default.vert", "assets/shaders/ray.frag");
+  Shader pmxShader("assets/shaders/pmx.vert", "assets/shaders/default.frag");
   
   
   // Texture
@@ -172,6 +174,11 @@ int main() {
     faceAllCount += item.faceCount;
   }
   
+  // PMX Model
+  PMXModel feixiaoModel(pmxFile);
+  
+  
+  
   // Main while loop
   while (!glfwWindowShouldClose(window))
   {
@@ -201,7 +208,11 @@ int main() {
     selector.Watch(window, rayCaster, meshes);
     mesh.Draw(shader);
     mesh2.Draw(shader);
-    feixiaoMesh.DrawPMX(shader, pmxFile.materials);
+    // feixiaoMesh.DrawPMX(shader, pmxFile.materials);
+    
+    pmxShader.Activate();
+    camera.updateMatrix(45.0f, 0.1f, 100.0f, pmxShader, "camMatrix");
+    feixiaoModel.Draw(pmxShader);
     
     // Ray Casting
     rayShader.Activate();
