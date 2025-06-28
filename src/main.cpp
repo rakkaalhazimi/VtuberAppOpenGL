@@ -3,6 +3,10 @@
 #include<fstream>
 #include<sstream>
 
+#ifdef _WIN32
+  #include <windows.h>
+#endif
+
 #include<glad/glad.h>
 #include<glfw/glfw3.h>
 #include<glm/glm.hpp>
@@ -46,6 +50,13 @@ GLuint indices[] = {
 
 
 int main() {
+  
+  // Enable windows to print kanji
+  #ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+  #endif
+  
+  
   // Initialize GLFW
   glfwInit();
   
