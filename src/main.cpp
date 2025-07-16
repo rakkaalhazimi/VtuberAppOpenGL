@@ -190,7 +190,41 @@ int main() {
   // PMX Model
   PMXModel feixiaoModel(pmxFile);
   
+  float modelXRotation = 0.0f;
+  float modelYRotation = 0.0f;
   
+  
+  // Moving limb test
+  // 55 = Left Arm Index
+  // 60 = Left Elbow Index
+  // 65 = Left Wrist Index
+  // 16 = Head Index
+  int base = 65;
+  int target = 60;
+  glm::vec3 vectorBase = glm::normalize(feixiaoModel.bones[base].position - feixiaoModel.bones[target].position);
+  std::cout 
+    << "Vector base: " 
+    << vectorBase.x
+    << " "
+    << vectorBase.y
+    << " "
+    << vectorBase.z << std::endl;
+    
+  glm::vec3 vectorTarget = glm::vec3(0.2f, 0.8f, 0.4f);
+  
+  glm::vec3 axis = glm::cross(vectorBase, vectorTarget); // vector that perpendicular with a and b.
+  float angle = std::acos(glm::dot(vectorBase, vectorTarget));
+  
+  glm::quat rotation = angleAxis(angle, normalize(axis));
+  
+  // Convert to matrix and then to Euler angles
+  glm::mat4 rotationMatrix = glm::toMat4(rotation);
+  glm::vec3 eulerAngles = glm::eulerAngles(rotation);  // or extract manually
+
+  // Apply Euler angles to bone
+  feixiaoModel.bones[target].rotation.x = eulerAngles.x;  // depends on your rotation order
+  feixiaoModel.bones[target].rotation.y = eulerAngles.y;
+  feixiaoModel.bones[target].rotation.z = eulerAngles.z;
   
   // Main while loop
   while (!glfwWindowShouldClose(window))
@@ -207,6 +241,8 @@ int main() {
     {
       shader.Activate();
       // uOffset += 0.01f; // temporarily disable uvOffset for pmx mesh
+      modelXRotation += 1.0f;
+      modelYRotation += 0.01f;
       GLuint uOffsetLoc = glGetUniformLocation(shader.ID, "uOffset");
       glUniform1f(uOffsetLoc, uOffset);
       
