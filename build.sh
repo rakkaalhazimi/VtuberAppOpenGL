@@ -10,4 +10,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # Run executable
-exec ./bin/app $1
+exec ./bin/app "$1"
