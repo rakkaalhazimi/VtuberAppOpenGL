@@ -1,6 +1,9 @@
 # VtuberAppCPP
 
-
+## Run Program
+```
+sh build.sh <model_filename>
+```
 
 ## Issues Along Developments
 ### Double library paths
