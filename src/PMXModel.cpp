@@ -12,7 +12,8 @@ PMXModel::PMXModel(PMXFile &pmxFile)
         pmxFile.bones[i].nameLocal,
         pmxFile.bones[i].nameGlobal,
         pmxFile.bones[i].parentBoneIndex,
-        pmxFile.bones[i].position,
+        pmxFile.bones[i].position, // rest position
+        glm::vec3(0.0f), // position
         glm::vec3(0.0f), // rotation
       }
     );
@@ -119,9 +120,10 @@ void PMXModel::Update()
   {
     BoneModel bone = bones[i];
     localTransform[i] = 
-      glm::translate(glm::mat4(1.0f), bone.position) *
+      glm::translate(glm::mat4(1.0f), bone.restPosition) *
       glm::toMat4(glm::quat(bone.rotation)) * 
-      glm::translate(glm::mat4(1.0f), -bone.position);
+      glm::translate(glm::mat4(1.0f), -bone.restPosition) *
+      glm::translate(glm::mat4(1.0f), bone.position);
     
     if (bone.parentBoneIndex > 0)
     {

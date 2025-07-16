@@ -32,6 +32,8 @@ struct BoneModel
   
   int32_t parentBoneIndex;
   
+  glm::vec3 restPosition;
+  
   glm::vec3 position;
   glm::vec3 rotation;
 };

@@ -201,7 +201,7 @@ int main() {
   // 16 = Head Index
   int base = 65;
   int target = 60;
-  glm::vec3 vectorBase = glm::normalize(feixiaoModel.bones[base].position - feixiaoModel.bones[target].position);
+  glm::vec3 vectorBase = glm::normalize(feixiaoModel.bones[base].restPosition - feixiaoModel.bones[target].restPosition);
   std::cout 
     << "Vector base: " 
     << vectorBase.x
@@ -225,6 +225,9 @@ int main() {
   feixiaoModel.bones[target].rotation.x = eulerAngles.x;  // depends on your rotation order
   feixiaoModel.bones[target].rotation.y = eulerAngles.y;
   feixiaoModel.bones[target].rotation.z = eulerAngles.z;
+  
+  // Move whole model
+  feixiaoModel.bones[3].position.x = 2.0f;
   
   // Main while loop
   while (!glfwWindowShouldClose(window))
