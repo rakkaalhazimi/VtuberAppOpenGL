@@ -382,7 +382,8 @@ struct PMXJoint
 template <typename T>
 bool readBinary(std::istream &stream, T &value);
 
-
+// PMX specification reference:
+// https://gist.github.com/felixjones/f8a06bd48f9da9a4539f/b3944390bd935f48ddf72dd2fc058ffe87c10708
 class PMXFile
 {
   public:
