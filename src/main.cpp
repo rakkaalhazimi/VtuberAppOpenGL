@@ -1,6 +1,8 @@
 #include<iomanip>
 #include<iostream>
 #include<fstream>
+#include<unordered_map>
+#include<set>
 #include<sstream>
 
 #ifdef _WIN32
@@ -125,7 +127,7 @@ int main() {
   float uOffset = 0.0f;
   
   // Camera
-  Camera camera(width, height, glm::vec3(0.0f, 0.0f, -2.0f));
+  Camera camera(width, height, glm::vec3(0.0f, 20.0f, -15.0f));
   
   glEnable(GL_DEPTH_TEST);
   // Specify the color of the background
@@ -219,10 +221,11 @@ int main() {
     selector.Watch(window, rayCaster, meshes);
     mesh.Draw(shader);
     mesh2.Draw(shader);
-    // feixiaoMesh.DrawPMX(shader, pmxFile.materials);
     
     pmxShader.Activate();
+    
     camera.updateMatrix(45.0f, 0.1f, 100.0f, pmxShader, "camMatrix");
+    feixiaoModel.Update();
     feixiaoModel.Draw(pmxShader);
     
     // Ray Casting

@@ -3,6 +3,26 @@
 
 PMXModel::PMXModel(PMXFile &pmxFile)
 {
+  for (size_t i = 0; i < pmxFile.bones.size(); i++)
+  {
+    int parent = pmxFile.bones[i].parentBoneIndex;
+    boneChildren[parent].push_back(i);
+    bones.push_back(
+      {
+        pmxFile.bones[i].nameLocal,
+        pmxFile.bones[i].nameGlobal,
+        pmxFile.bones[i].parentBoneIndex,
+        pmxFile.bones[i].position,
+        glm::vec3(0.0f), // rotation
+      }
+    );
+    
+  }
+  
+  boneMatrices = std::vector<glm::mat4>(pmxFile.bones.size(), glm::mat4(1.0f));
+  localTransform = boneMatrices;
+  globalTransform = boneMatrices;
+  
   // Vertices
   // Convert vertices from PMXFile -> PMXModel  
   for (PMXVertex item: pmxFile.vertices)
@@ -32,6 +52,9 @@ PMXModel::PMXModel(PMXFile &pmxFile)
     );
     
   }
+  
+  // Clone vertices for skinning operation
+  skinnedVertices = std::vector<VertexModel>(vertices);
   
   // Indices
   // CAVEAT: use the vertex index size (current size is 2 thus we use uint16_t)
@@ -90,10 +113,49 @@ PMXModel::PMXModel(PMXFile &pmxFile)
 }
 
 
+void PMXModel::Update()
+{
+  for (size_t i = 0; i < bones.size(); i++)
+  {
+    BoneModel bone = bones[i];
+    localTransform[i] = 
+      glm::translate(glm::mat4(1.0f), bone.position) *
+      glm::toMat4(glm::quat(bone.rotation)) * 
+      glm::translate(glm::mat4(1.0f), -bone.position);
+    
+    if (bone.parentBoneIndex > 0)
+    {
+      globalTransform[i] = globalTransform[bone.parentBoneIndex] * localTransform[i];
+    }
+    else 
+    {
+      globalTransform[i] = localTransform[i];
+    }
+  }
+  
+  boneMatrices = globalTransform;
+}
+
+
 void PMXModel::Draw(Shader &shader)
 {
   shader.Activate();
   glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  
+  for (size_t i = 0; i < skinnedVertices.size(); i++)
+  {
+    glm::vec4 skinnedPos = glm::vec4(0.0f);
+    for (size_t j = 0; j < 4; j++)
+    {
+        int boneIndex = skinnedVertices[i].boneIndices[j];
+        float weight = skinnedVertices[i].boneWeights[j];
+        skinnedPos += weight * (boneMatrices[boneIndex] * glm::vec4(vertices[i].position, 1.0f));
+    }
+    skinnedVertices[i].position = skinnedPos;
+  }
+  
+  glBufferSubData(GL_ARRAY_BUFFER, 0, skinnedVertices.size() * sizeof(VertexModel), skinnedVertices.data());
   
   int indexOffset = 0;
   
