@@ -80,12 +80,17 @@ Texture::Texture(std::string image, const char* texType, GLuint slot)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthImg, heightImg, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);
 	}
+  else if (numColCh == 2)
+  {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, widthImg, heightImg, 0, GL_RG, GL_UNSIGNED_BYTE, bytes);
+  }
 	else if (numColCh == 1)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthImg, heightImg, 0, GL_RED, GL_UNSIGNED_BYTE, bytes);
 	}
 	else 
 	{
+    std::cerr << "num col ch: " << numColCh << std::endl;
 		throw std::invalid_argument("Automatic Texture type recognition failed");
 	}
   
