@@ -59,6 +59,7 @@ int main(int argc, char * argv[]) {
       return 1;
   }
   std::string modelFilepath = argv[1];
+  std::cout << "Model filepath: " << modelFilepath << std::endl;
   
   // Enable windows to print kanji
   #ifdef _WIN32
