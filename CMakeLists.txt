@@ -16,7 +16,7 @@ set(EXE_FILE "app")
 # endif()
 
 # Include Folders
-include_directories(include)
+include_directories(include include/imgui)
 
 # Source Folders
 file(GLOB_RECURSE SOURCES 

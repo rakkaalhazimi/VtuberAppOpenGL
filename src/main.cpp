@@ -15,6 +15,10 @@
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
 
+#include<imgui/imgui.h>
+#include<imgui/imgui_impl_glfw.h>
+#include<imgui/imgui_impl_opengl3.h>
+
 #include "Camera.h"
 #include "PMXFile.h"
 #include "PMXModel.h"
@@ -237,9 +241,33 @@ int main(int argc, char * argv[]) {
   // Move whole model
   feixiaoModel.bones[3].position.x = 2.0f;
   
+  
+  // Morph test
+  // feixiaoModel.UpdateMorph();
+  float morphWeight = 0.0f;
+  
+  
   // Main while loop
   while (!glfwWindowShouldClose(window))
   {
+    // Take care of all GLFW events
+    glfwPollEvents();
+    
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    ImGui::Begin("Dear ImGui Demo");
+    ImGui::SliderFloat("slider float", &morphWeight, 0.0f, 1.0f, "ratio = %.3f");
+    ImGui::MenuItem("(demo menu)", NULL, false, false);
+    ImGui::End();
+    // ImGui::ShowDemoWindow(); // Show demo window! :)
+    
+    if (morphWeight > 0.0f)
+    {
+      // feixiaoModel.UpdateMorph(morphWeight);
+    }
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     float currentTime = glfwGetTime();
@@ -305,10 +333,12 @@ int main(int argc, char * argv[]) {
       // << "width: " << winWidth << " height: " << winHeight;
     textRender.type(textShader, mouseLog.str(), 400.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
     
-    glfwSwapBuffers(window);
+    // Rendering Imgui
+    // (After clears your framebuffer, renders your other stuff etc.)
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
-    // Take care of all GLFW events
-    glfwPollEvents();
+    glfwSwapBuffers(window);
   }
   
   shader.Delete();
@@ -316,6 +346,9 @@ int main(int argc, char * argv[]) {
   rayShader.Delete();
   mesh.Delete();
   myTexture.Delete();
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
   glfwDestroyWindow(window);
   glfwTerminate();
   
