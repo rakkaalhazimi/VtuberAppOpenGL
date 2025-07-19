@@ -16,7 +16,8 @@ set(EXE_FILE "app")
 # endif()
 
 # Include Folders
-include_directories(include include/imgui)
+# include_directories(include include/imgui)
+
 
 # Source Folders
 file(GLOB_RECURSE SOURCES 
@@ -29,6 +30,11 @@ file(GLOB_RECURSE SOURCES
 # Compile and link main.cpp and foo.cpp
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+    src
+    include
+    include/imgui
+)
 
 # Link Libraries
 target_link_libraries(${PROJECT_NAME} 
