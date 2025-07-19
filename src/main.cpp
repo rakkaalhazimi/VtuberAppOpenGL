@@ -31,8 +31,8 @@
 
 
 
-const unsigned int width = 800;
-const unsigned int height = 800;
+const unsigned int width = 1280;
+const unsigned int height = 720;
 
 // position | normal | color | texture
 Vertex vertices[] = 
@@ -102,6 +102,19 @@ int main(int argc, char * argv[]) {
   // Specify the viewport of OpenGL in the Window
   // In this case the viewport goes from x=0, y=0, to x=800, y=800
   glViewport(0, 0, width, height);
+  
+  
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+
+  // Setup Platform/Renderer backends
+  ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+  ImGui_ImplOpenGL3_Init();
   
   
   Shader shader("assets/shaders/default.vert", "assets/shaders/default.frag");
@@ -265,7 +278,7 @@ int main(int argc, char * argv[]) {
     
     if (morphWeight > 0.0f)
     {
-      // feixiaoModel.UpdateMorph(morphWeight);
+      feixiaoModel.UpdateMorph(morphWeight);
     }
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

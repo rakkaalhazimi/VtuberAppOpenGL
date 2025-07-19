@@ -54,6 +54,7 @@ PMXModel::PMXModel(PMXFile &pmxFile)
     
   }
   
+  baseVertices = vertices;
   // Clone vertices for skinning operation
   skinnedVertices = std::vector<VertexModel>(vertices);
   
@@ -74,6 +75,9 @@ PMXModel::PMXModel(PMXFile &pmxFile)
   
   // Materials
   materials = pmxFile.materials;
+  
+  // Morphs
+  morphs = pmxFile.morphs;
   
   // OpenGL Array Buffer
   glGenVertexArrays(1, &VAO);
@@ -113,6 +117,26 @@ PMXModel::PMXModel(PMXFile &pmxFile)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void PMXModel::UpdateMorph(float &weight)
+{
+  // Wink right: ウィンク右
+  // Wink left: ウィンク左
+  // Wink: ウィンク
+  // Wink: ウィンク２
+  // float weight = 0.8;
+  for (PMXMorph item: morphs)
+  {
+    if (item.nameLocal.find("ウィンク右") != std::string::npos)
+    {
+      // std::cout << "Morph name: " << item.nameLocal << std::endl;
+      for (PMXMorph::VertexMorph vMorph: item.vertexMorph)
+      {
+        vertices[vMorph.vertexIndex].position =
+          baseVertices[vMorph.vertexIndex].position + vMorph.positionOffset * weight;
+      }
+    }
+  }
+}
 
 void PMXModel::Update()
 {

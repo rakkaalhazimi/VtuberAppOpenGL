@@ -42,12 +42,15 @@ class PMXModel
 {
   public:
     GLuint VAO, VBO, EBO;
+    std::vector<VertexModel> baseVertices;
     std::vector<VertexModel> vertices;
     std::vector<VertexModel> skinnedVertices;
     std::vector<GLuint> indices;
     std::vector<Texture> textures;
     std::vector<PMXMaterial> materials;
     std::vector<BoneModel> bones;
+    std::vector<PMXMorph> morphs;
+    
     std::unordered_map<int, std::vector<int>> boneChildren;
     
     std::vector<glm::mat4> boneMatrices;
@@ -56,6 +59,7 @@ class PMXModel
     std::vector<glm::mat4> localTransform;
     
     PMXModel(PMXFile &pmxFile);
+    void UpdateMorph(float &weight);
     void Update();
     void Draw(Shader& shader);
     
