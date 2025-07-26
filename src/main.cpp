@@ -108,6 +108,7 @@ int main(int argc, char * argv[]) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
+  io.Fonts->AddFontFromFileTTF("./assets/fonts/mgenplus-1mn-bold.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
