@@ -20,7 +20,9 @@
 #include<imgui/imgui_impl_opengl3.h>
 
 #include "Camera.h"
+#include "commands/CommandManager.h"
 #include "commands/RotateBoneCommand.h"
+#include "gui/PMXEditorGUI.h"
 #include "Mesh.h"
 #include "PMXFile.h"
 #include "PMXModel.h"
@@ -261,6 +263,10 @@ int main(int argc, char * argv[]) {
   float morphWeight = 0.0f;
   glm::vec3 boneRotation(0.0f);
   RotateBoneCommand command(feixiaoModel, 16, boneRotation);
+  CommandManager commandManager;
+  
+  // GUI test
+  PMXEditorGUI pmxEditorGUI(feixiaoModel, commandManager);
   
   
   // Main while loop
@@ -273,26 +279,7 @@ int main(int argc, char * argv[]) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ImGui::Begin("MMD Model");
-    
-    if (ImGui::CollapsingHeader("Bones"))
-    {
-      ImGui::SliderFloat("rotation-x", &boneRotation.x, -glm::pi<float>(), glm::pi<float>(), "%.3f");
-      ImGui::SameLine();
-      ImGui::InputFloat("##rotation-x", &boneRotation.x, 0.01f, 0.1f, "%.3f");
-      ImGui::SliderFloat("rotation-y", &boneRotation.y, -glm::pi<float>(), glm::pi<float>(), "%.3f");
-      ImGui::SliderFloat("rotation-z", &boneRotation.z, -glm::pi<float>(), glm::pi<float>(), "%.3f");
-      
-      command.execute();
-    }
-    
-    if (ImGui::CollapsingHeader("Morphs"))
-    {
-      ImGui::SliderFloat("slider float", &morphWeight, 0.0f, 1.0f, "ratio = %.3f");
-    }
-    
-    ImGui::MenuItem("(demo menu)", NULL, false, false);
-    ImGui::End();
+    pmxEditorGUI.draw();
     
     ImGui::ShowDemoWindow(); // Show demo window! :)
     
