@@ -351,7 +351,7 @@ int main(int argc, char * argv[]) {
       << " "
       << "Inter: " << hit;
       // << "width: " << winWidth << " height: " << winHeight;
-    textRender.type(textShader, mouseLog.str(), 400.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+    // textRender.type(textShader, mouseLog.str(), 400.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
     
     // Rendering Imgui
     // (After clears your framebuffer, renders your other stuff etc.)
